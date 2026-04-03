@@ -1,0 +1,4 @@
+.env
+serviceAccount.json
+*-firebase-adminsdk-*.json
+vertex-service-account.json
