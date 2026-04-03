@@ -2,3 +2,5 @@
 serviceAccount.json
 *-firebase-adminsdk-*.json
 vertex-service-account.json
+node_modules/
+*.log
