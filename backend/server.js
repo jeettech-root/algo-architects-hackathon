@@ -325,6 +325,25 @@ async function readScans() {
   return localScans.slice(0, 100);
 }
 
+async function clearScans() {
+  if (firestore) {
+    const snapshot = await firestore.collection('scans').limit(500).get();
+
+    if (snapshot.empty) {
+      return { deleted: 0 };
+    }
+
+    const batch = firestore.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    return { deleted: snapshot.size };
+  }
+
+  const deleted = localScans.length;
+  localScans.length = 0;
+  return { deleted };
+}
+
 app.get('/', (req, res) => {
   res.json({
     status: 'CyberShield API is live',
@@ -400,6 +419,19 @@ app.get('/stats', async (req, res) => {
     return res.json(stats);
   } catch (error) {
     return res.status(500).json({ error: 'Failed to fetch stats', details: error.message });
+  }
+});
+
+app.delete('/stats', async (req, res) => {
+  try {
+    const result = await clearScans();
+    return res.json({
+      ok: true,
+      deleted: result.deleted,
+      message: 'Dashboard scan history cleared.',
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to clear stats', details: error.message });
   }
 });
 

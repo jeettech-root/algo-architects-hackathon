@@ -59,10 +59,16 @@ const styles = {
   },
   toolbar: {
     display: 'grid',
-    gridTemplateColumns: '1.5fr 1fr auto auto',
+    gridTemplateColumns: 'minmax(240px, 1.5fr) minmax(180px, 1fr) auto',
     gap: '12px',
     marginBottom: '18px',
     alignItems: 'center',
+  },
+  actions: {
+    display: 'flex',
+    gap: '10px',
+    justifyContent: 'flex-end',
+    flexWrap: 'wrap',
   },
   input: {
     width: '100%',
@@ -101,6 +107,17 @@ const styles = {
     color: '#f7f4ea',
     border: '1px solid rgba(120, 142, 168, 0.22)',
     background: 'rgba(7, 17, 31, 0.88)',
+  },
+  dangerButton: {
+    borderRadius: '14px',
+    padding: '12px 16px',
+    fontSize: '13px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    color: '#ffe7e7',
+    border: '1px solid rgba(255, 107, 107, 0.35)',
+    background: 'linear-gradient(180deg, rgba(127, 29, 29, 0.9), rgba(91, 18, 18, 0.95))',
+    boxShadow: '0 10px 24px rgba(127, 29, 29, 0.22)',
   },
   grid: {
     display: 'grid',
@@ -172,6 +189,7 @@ export default function App() {
   const [manualContent, setManualContent] = useState('');
   const [manualResult, setManualResult] = useState(null);
   const [manualLoading, setManualLoading] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
   useEffect(() => {
@@ -258,6 +276,34 @@ export default function App() {
     setRefreshTick((value) => value + 1);
   }
 
+  async function clearDashboardData() {
+    if (!window.confirm('Clear all scan history and dashboard stats?')) {
+      return;
+    }
+
+    try {
+      setClearing(true);
+      const response = await fetch(`${API_BASE_URL}/stats`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.details || payload.error || `Request failed with ${response.status}`);
+      }
+
+      setStats(emptyStats);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setQuery('');
+      setRiskFilter('ALL');
+      setManualResult(null);
+    } catch (clearError) {
+      setError(`Unable to clear dashboard data: ${clearError.message}`);
+    } finally {
+      setClearing(false);
+    }
+  }
+
   async function runManualScan() {
     if (!manualUrl.trim() && !manualContent.trim()) {
       setManualResult({ error: 'Enter a URL, some text, or both to test a scan.' });
@@ -327,15 +373,24 @@ export default function App() {
             <option value="MEDIUM">Medium only</option>
             <option value="LOW">Safe only</option>
           </select>
-          <button style={styles.secondaryButton} onClick={() => setRefreshTick((value) => value + 1)}>
-            Refresh
-          </button>
-          <button
-            style={styles.secondaryButton}
-            onClick={resetDashboardState}
-          >
-            Clear
-          </button>
+          <div style={styles.actions}>
+            <button style={styles.secondaryButton} onClick={() => setRefreshTick((value) => value + 1)}>
+              Refresh
+            </button>
+            <button
+              style={styles.secondaryButton}
+              onClick={resetDashboardState}
+            >
+              Reset Filters
+            </button>
+            <button
+              style={styles.dangerButton}
+              onClick={clearDashboardData}
+              disabled={clearing}
+            >
+              {clearing ? 'Clearing...' : 'Clear All Data'}
+            </button>
+          </div>
         </div>
 
         <div style={styles.grid}>
