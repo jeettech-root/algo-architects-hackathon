@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://cybershield-backend-t7v6.onrender.com';
 const STATS_URL = `${API_BASE_URL}/stats`;
 const HEALTH_URL = `${API_BASE_URL}/health`;
 const STORAGE_KEY = 'cybershieldLastScan';

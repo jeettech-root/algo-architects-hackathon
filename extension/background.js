@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://cybershield-backend-t7v6.onrender.com';
 const PREDICT_URL = `${API_BASE_URL}/predict`;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
