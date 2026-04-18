@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+*.log
+serviceAccount.json
+*-firebase-adminsdk-*.json
+vertex-service-account.json

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: cybershield-backend
+    env: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MODEL_PATH
+        value: model.pkl
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: GOOGLE_API_KEY
+        sync: false

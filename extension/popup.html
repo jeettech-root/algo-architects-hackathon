@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CyberShield</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      width: 340px;
+      margin: 0;
+      padding: 18px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(246, 173, 85, 0.18), transparent 30%),
+        linear-gradient(180deg, #08111d 0%, #0d1728 48%, #08101b 100%);
+      color: #f7f4ea;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #f9c74f;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #9fb0c3;
+      line-height: 1.4;
+    }
+    .status {
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 11px;
+      line-height: 1.35;
+      max-width: 120px;
+      border: 1px solid rgba(82, 196, 26, 0.3);
+      background: rgba(16, 185, 129, 0.12);
+      color: #d1fae5;
+    }
+    .status-error {
+      border-color: rgba(255, 107, 107, 0.35);
+      background: rgba(127, 29, 29, 0.35);
+      color: #fecaca;
+    }
+    .card {
+      background: rgba(8, 17, 29, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 12px;
+      color: #9fb0c3;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .scan-chip {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .scan-chip-high { background: rgba(255, 107, 107, 0.16); color: #ff9a9a; }
+    .scan-chip-medium { background: rgba(246, 173, 85, 0.16); color: #ffd089; }
+    .scan-chip-low { background: rgba(81, 207, 102, 0.16); color: #a7f3b0; }
+    .scan-detail {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #e5e7eb;
+      margin-bottom: 8px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11px;
+      color: #8ea0b8;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .patterns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .pattern-pill {
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 11px;
+      background: rgba(148, 163, 184, 0.12);
+      color: #dbe4ef;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .stat {
+      background: rgba(15, 23, 42, 0.74);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+    .stat-label {
+      font-size: 11px;
+      color: #8ea0b8;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .stat-high { color: #ff8b8b; }
+    .stat-medium { color: #ffd089; }
+    .stat-safe { color: #9df0a8; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      background: linear-gradient(90deg, #f9c74f, #f59e0b);
+      color: #111827;
+    }
+    .ghost-button {
+      background: rgba(148, 163, 184, 0.1);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+    button:disabled {
+      opacity: 0.7;
+      cursor: progress;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">CyberShield</div>
+      <div class="subtitle">Live phishing detection powered by Vertex AI and Firestore.</div>
+    </div>
+    <div id="backend-status" class="status status-ok">Checking backend...</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Current Tab</div>
+    <div class="meta-row">
+      <span id="scan-host">Waiting for page...</span>
+      <span id="scan-time">No recent scan</span>
+    </div>
+    <div id="scan-chip" class="scan-chip">
+      <span id="scan-status">No scan yet</span>
+    </div>
+    <div id="scan-detail" class="scan-detail">Open a suspicious page or click "Scan current tab".</div>
+    <div id="scan-patterns" class="patterns"></div>
+    <div class="toolbar">
+      <button id="scan-now">Scan current tab</button>
+      <button id="refresh-popup" class="ghost-button">Refresh panel</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dashboard Stats</div>
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-label">Total scans</div>
+        <div class="stat-value" id="total">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">High risk</div>
+        <div class="stat-value stat-high" id="high">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Medium risk</div>
+        <div class="stat-value stat-medium" id="medium">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Safe</div>
+        <div class="stat-value stat-safe" id="safe">-</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
