@@ -223,15 +223,18 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
 
     try:
         if cloud_ai_configured():
-            cloud_analysis = call_vertex_ai_analysis(url, content)
-            analysis = AnalyzeResponse(
-                riskLevel=cloud_analysis["riskLevel"],
-                score=cloud_analysis["score"],
-                patterns=cloud_analysis["patterns"],
-                reason=cloud_analysis["reason"],
-            )
-            save_scan(url, analysis)
-            return analysis
+            try:
+                cloud_analysis = call_vertex_ai_analysis(url, content)
+                analysis = AnalyzeResponse(
+                    riskLevel=cloud_analysis["riskLevel"],
+                    score=cloud_analysis["score"],
+                    patterns=cloud_analysis["patterns"],
+                    reason=cloud_analysis["reason"],
+                )
+                save_scan(url, analysis)
+                return analysis
+            except VertexAIError:
+                pass
 
         if url:
             label, confidence, source = run_prediction(url)

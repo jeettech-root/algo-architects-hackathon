@@ -141,21 +141,24 @@ def generate_with_vertex(config: Dict[str, str], prompt: str) -> str:
     except ImportError as exc:
         raise VertexAIError("google-genai package is not installed") from exc
 
-    client = genai.Client(
-        vertexai=True,
-        project=config["project_id"],
-        location=config["location"],
-    )
-    response = client.models.generate_content(
-        model=config["model"],
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            temperature=0.2,
-            max_output_tokens=220,
-            response_mime_type="application/json",
-        ),
-    )
-    return get_response_text(response)
+    try:
+        client = genai.Client(
+            vertexai=True,
+            project=config["project_id"],
+            location=config["location"],
+        )
+        response = client.models.generate_content(
+            model=config["model"],
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.2,
+                max_output_tokens=220,
+                response_mime_type="application/json",
+            ),
+        )
+        return get_response_text(response)
+    except Exception as exc:
+        raise VertexAIError(f"Vertex AI request failed: {exc}") from exc
 
 
 def generate_with_api_key(config: Dict[str, str], prompt: str) -> str:
