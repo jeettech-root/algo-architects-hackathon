@@ -5,3 +5,4 @@ requests
 scikit-learn
 tldextract
 python-dotenv
+google-genai

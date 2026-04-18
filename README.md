@@ -50,6 +50,27 @@ Environment variables:
 - `CORS_ORIGINS=*`
 - `GOOGLE_API_KEY=...` optional, used for Google AI cross-checking
 
+For Vertex AI fraud detection, add a Render secret file named:
+
+```text
+vertex-service-account.json
+```
+
+Paste your Google Cloud service account JSON into that secret file. Render mounts it at:
+
+```text
+/etc/secrets/vertex-service-account.json
+```
+
+Then add these Render environment variables:
+
+```text
+GCP_PROJECT_ID=your-google-cloud-project-id
+GCP_LOCATION=us-central1
+GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/vertex-service-account.json
+VERTEX_MODEL=gemini-2.5-flash
+```
+
 After deployment, set the dashboard environment variable to your Render URL:
 
 ```bash

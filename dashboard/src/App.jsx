@@ -266,7 +266,7 @@ export default function App() {
 
   const cloudWarning =
     backendStatus && !backendStatus.liveScanningReady
-      ? 'Live cloud scanning is not ready yet. Add Firebase service account credentials and a GCP project ID for Vertex AI.'
+      ? 'Live Vertex AI fraud detection is not ready yet. Add Vertex AI credentials in Render, or continue with local ML scanning.'
       : '';
 
   function resetDashboardState() {

@@ -16,3 +16,11 @@ services:
         value: "*"
       - key: GOOGLE_API_KEY
         sync: false
+      - key: GCP_PROJECT_ID
+        sync: false
+      - key: GCP_LOCATION
+        value: us-central1
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/vertex-service-account.json
+      - key: VERTEX_MODEL
+        value: gemini-2.5-flash

@@ -8,11 +8,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 try:
     from .model_loader import LocalModel
-    from .vertex_client import VertexAIError, call_vertex_ai
+    from .vertex_client import (
+        VertexAIError,
+        call_vertex_ai,
+        call_vertex_ai_analysis,
+        cloud_ai_configured,
+        vertex_ai_configured,
+    )
     from .decision import decide
 except ImportError:
     from model_loader import LocalModel
-    from vertex_client import VertexAIError, call_vertex_ai
+    from vertex_client import (
+        VertexAIError,
+        call_vertex_ai,
+        call_vertex_ai_analysis,
+        cloud_ai_configured,
+        vertex_ai_configured,
+    )
     from decision import decide
 
 # Load environment variables from .env file
@@ -155,17 +167,28 @@ def health() -> dict:
         "storageMode": "memory",
         "analysisMode": "ml_model_with_optional_google_ai",
         "googleApiConfigured": bool(os.getenv("GOOGLE_API_KEY")),
+        "vertexConfigured": vertex_ai_configured(),
+        "cloudAiConfigured": cloud_ai_configured(),
         "timestamp": now_iso(),
     }
 
 
 @app.get("/config-status")
 def config_status() -> dict:
+    is_cloud_ready = cloud_ai_configured()
     return {
         "storageMode": "memory",
         "analysisMode": "ml_model_with_optional_google_ai",
         "modelPath": MODEL_PATH,
         "googleApiConfigured": bool(os.getenv("GOOGLE_API_KEY")),
+        "vertexConfigured": vertex_ai_configured(),
+        "cloudAiConfigured": is_cloud_ready,
+        "firebaseReady": False,
+        "vertexReady": is_cloud_ready,
+        "liveScanningReady": is_cloud_ready,
+        "gcpProjectIdConfigured": bool(os.getenv("GCP_PROJECT_ID")),
+        "gcpLocation": os.getenv("GCP_LOCATION", "us-central1"),
+        "vertexModel": os.getenv("VERTEX_MODEL", "gemini-2.5-flash"),
     }
 
 
@@ -199,6 +222,17 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
     patterns = list(dict.fromkeys([*url_patterns, *content_patterns]))[:3]
 
     try:
+        if cloud_ai_configured():
+            cloud_analysis = call_vertex_ai_analysis(url, content)
+            analysis = AnalyzeResponse(
+                riskLevel=cloud_analysis["riskLevel"],
+                score=cloud_analysis["score"],
+                patterns=cloud_analysis["patterns"],
+                reason=cloud_analysis["reason"],
+            )
+            save_scan(url, analysis)
+            return analysis
+
         if url:
             label, confidence, source = run_prediction(url)
             risk_level, model_score = label_to_risk(label, confidence)
