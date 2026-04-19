@@ -13,17 +13,14 @@ async function loadPopup() {
   bindActions();
   
   const userId = await getUserId();
-  const syncEl = document.getElementById('sync-id');
-  if (syncEl) {
-    syncEl.textContent = userId;
-    syncEl.onclick = () => {
-      navigator.clipboard.writeText(userId);
-      syncEl.textContent = 'Copied!';
-      setTimeout(() => syncEl.textContent = userId, 2000);
+  const dashBtn = document.getElementById('open-dashboard');
+  if (dashBtn) {
+    dashBtn.onclick = () => {
+      chrome.tabs.create({ url: `${DASHBOARD_URL}/?userId=${userId}` });
     };
   }
 
-  await Promise.all([loadStats(), loadCurrentTabScan(), loadHealth()]);
+  await Promise.all([loadCurrentTabScan(), loadHealth()]);
 }
 
 function bindActions() {
@@ -42,28 +39,6 @@ function bindActions() {
       button.textContent = 'Refresh panel';
     }
   };
-}
-
-async function loadStats() {
-  try {
-    const userId = await getUserId();
-    const response = await fetch(`${STATS_URL}?userId=${userId}`);
-    if (!response.ok) {
-      throw new Error(`Stats request failed with ${response.status}`);
-    }
-
-    const data = await response.json();
-    document.getElementById('total').textContent = data.total ?? 0;
-    document.getElementById('high').textContent = data.high ?? 0;
-    document.getElementById('medium').textContent = data.medium ?? 0;
-    document.getElementById('safe').textContent = data.low ?? 0;
-  } catch (error) {
-    document.getElementById('total').textContent = '-';
-    document.getElementById('high').textContent = '-';
-    document.getElementById('medium').textContent = '-';
-    document.getElementById('safe').textContent = '-';
-    setBackendStatus(`Backend offline: ${error.message}`, true);
-  }
 }
 
 async function loadHealth() {
@@ -151,7 +126,7 @@ async function rescanCurrentTab() {
     const result = await analyzeCurrentTab(pagePayload);
     await chrome.storage.local.set({ [STORAGE_KEY]: result });
     await renderResultInTab(tab);
-    await Promise.all([loadCurrentTabScan(), loadStats()]);
+    await Promise.all([loadCurrentTabScan()]);
   } catch (error) {
     setBackendStatus(`Manual scan failed: ${error.message}`, true);
   } finally {
@@ -179,7 +154,7 @@ async function refreshPanel() {
     }
   }
 
-  await Promise.all([loadStats(), loadCurrentTabScan(), loadHealth()]);
+  await Promise.all([loadCurrentTabScan(), loadHealth()]);
 }
 
 async function ensureContentScript(tab) {

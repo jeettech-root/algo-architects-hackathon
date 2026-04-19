@@ -2,6 +2,9 @@
 // Example: const API_BASE_URL = 'https://cybershield-backend-mrr3.onrender.com';
 var API_BASE_URL = 'https://cybershield-backend-mrr3.onrender.com';
 
+// TODO: Update this to your deployed Vercel URL
+var DASHBOARD_URL = 'http://localhost:5173';
+
 async function getUserId() {
   const data = await chrome.storage.local.get('userId');
   if (data.userId) return data.userId;
