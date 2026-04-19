@@ -342,12 +342,8 @@ async function analyzeContent(url, content) {
 }
 
 async function saveScan(scan) {
-  const userId = scan.userId || 'anonymous';
-  const docData = { ...scan };
-  delete docData.userId;
-
   if (firestore) {
-    await firestore.collection('users').doc(userId).collection('scans').add(docData);
+    await firestore.collection('scans').add(scan);
     return;
   }
 
@@ -359,11 +355,9 @@ async function saveScan(scan) {
   });
 }
 
-async function readScans(userId = 'anonymous') {
+async function readScans() {
   if (firestore) {
     const snapshot = await firestore
-      .collection('users')
-      .doc(userId)
       .collection('scans')
       .orderBy('timestamp', 'desc')
       .limit(100)
@@ -379,17 +373,12 @@ async function readScans(userId = 'anonymous') {
     });
   }
 
-  return localScans.filter((s) => s.userId === userId).slice(0, 100);
+  return localScans.slice(0, 100);
 }
 
-async function clearScans(userId = 'anonymous') {
+async function clearScans() {
   if (firestore) {
-    const snapshot = await firestore
-      .collection('users')
-      .doc(userId)
-      .collection('scans')
-      .limit(500)
-      .get();
+    const snapshot = await firestore.collection('scans').limit(500).get();
 
     if (snapshot.empty) {
       return { deleted: 0 };
@@ -401,13 +390,9 @@ async function clearScans(userId = 'anonymous') {
     return { deleted: snapshot.size };
   }
 
-  const initialLength = localScans.length;
-  for (let i = localScans.length - 1; i >= 0; i--) {
-    if (localScans[i].userId === userId) {
-      localScans.splice(i, 1);
-    }
-  }
-  return { deleted: initialLength - localScans.length };
+  const deleted = localScans.length;
+  localScans.length = 0;
+  return { deleted };
 }
 
 app.get('/', (req, res) => {
@@ -444,7 +429,7 @@ app.get('/config-status', (req, res) => {
 });
 
 app.post('/analyze', async (req, res) => {
-  const { url = '', content = '', userId = 'anonymous' } = req.body || {};
+  const { url = '', content = '' } = req.body || {};
   const normalizedUrl = url.trim();
   const normalizedContent = content.trim();
 
@@ -456,7 +441,6 @@ app.post('/analyze', async (req, res) => {
     const analysis = await analyzeContent(normalizedUrl, normalizedContent);
 
     await saveScan({
-      userId,
       url: normalizedUrl || 'manual-text-input',
       riskLevel: analysis.riskLevel,
       score: analysis.score,
@@ -474,8 +458,7 @@ app.post('/analyze', async (req, res) => {
 
 app.get('/stats', async (req, res) => {
   try {
-    const userId = req.query.userId || 'anonymous';
-    const scans = await readScans(userId);
+    const scans = await readScans();
     const stats = {
       total: scans.length,
       high: scans.filter((scan) => scan.riskLevel === 'HIGH').length,
@@ -492,8 +475,7 @@ app.get('/stats', async (req, res) => {
 
 app.delete('/stats', async (req, res) => {
   try {
-    const userId = req.query.userId || req.body.userId || 'anonymous';
-    const result = await clearScans(userId);
+    const result = await clearScans();
     return res.json({
       ok: true,
       deleted: result.deleted,

@@ -177,30 +177,6 @@ const emptyStats = {
   recentScans: [],
 };
 
-function getDashboardUserId() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlUserId = urlParams.get('userId');
-  if (urlUserId) {
-    localStorage.setItem('cybershield_userId', urlUserId);
-    window.history.replaceState({}, '', window.location.pathname);
-    return urlUserId;
-  }
-  
-  let userId = localStorage.getItem('cybershield_userId');
-  if (!userId) {
-    userId = 'usr_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-    localStorage.setItem('cybershield_userId', userId);
-  }
-  return userId;
-}
-
-function setDashboardUserId(newId) {
-  if (newId && newId.trim()) {
-    localStorage.setItem('cybershield_userId', newId.trim());
-    window.location.reload();
-  }
-}
-
 export default function App() {
   const [stats, setStats] = useState(emptyStats);
   const [loading, setLoading] = useState(true);
@@ -224,9 +200,8 @@ export default function App() {
         setLoading(true);
         setError('');
 
-        const userId = getDashboardUserId();
         const [statsResponse, statusResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/stats?userId=${userId}`, {
+          fetch(`${API_BASE_URL}/stats`, {
             signal: controller.signal,
           }),
           fetch(`${API_BASE_URL}/config-status`, {
@@ -308,8 +283,7 @@ export default function App() {
 
     try {
       setClearing(true);
-      const userId = getDashboardUserId();
-      const response = await fetch(`${API_BASE_URL}/stats?userId=${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/stats`, {
         method: 'DELETE',
       });
 
@@ -340,7 +314,6 @@ export default function App() {
       setManualLoading(true);
       setManualResult(null);
 
-      const userId = getDashboardUserId();
       const response = await fetch(`${API_BASE_URL}/analyze`, {
   method: "POST",   // 🔥 THIS LINE FIXES EVERYTHING
   headers: {
@@ -348,8 +321,7 @@ export default function App() {
   },
   body: JSON.stringify({
     url: manualUrl.trim(),
-    content: manualContent.trim(),
-    userId
+    content: manualContent.trim()
   })
 });
 
@@ -376,7 +348,7 @@ export default function App() {
             <div style={styles.title}>CyberShield Dashboard</div>
             <div style={styles.subtitle}>
               Monitor phishing scan activity, risk distribution, and recent findings from one
-              place. <span style={{ color: '#f9c74f' }}>(Your ID: {getDashboardUserId()})</span>
+              place.
             </div>
           </div>
 
@@ -385,21 +357,6 @@ export default function App() {
 
         {error && <div style={styles.banner}>{error}</div>}
         {!error && cloudWarning && <div style={styles.banner}>{cloudWarning}</div>}
-
-        <div style={{ ...styles.panel, display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px', padding: '14px 20px' }}>
-          <div style={{ fontSize: '13px', color: '#a9b3c4' }}>Want to see your extension scans?</div>
-          <input
-            id="sync-input"
-            style={{ ...styles.input, width: '200px', padding: '8px 12px' }}
-            placeholder="Paste Extension ID here"
-          />
-          <button
-            style={{ ...styles.secondaryButton, padding: '8px 14px' }}
-            onClick={() => setDashboardUserId(document.getElementById('sync-input').value)}
-          >
-            Sync
-          </button>
-        </div>
 
         <div style={styles.toolbar}>
           <input

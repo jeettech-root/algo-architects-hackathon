@@ -14,11 +14,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function analyzePage(payload) {
-  const userId = await getUserId();
   const response = await fetch(ANALYZE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...payload, userId }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
