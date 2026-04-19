@@ -481,7 +481,7 @@ app.get('/stats', async (req, res) => {
       high: scans.filter((scan) => scan.riskLevel === 'HIGH').length,
       medium: scans.filter((scan) => scan.riskLevel === 'MEDIUM').length,
       low: scans.filter((scan) => scan.riskLevel === 'LOW').length,
-      recentScans: scans.slice(0, 10),
+      recentScans: scans,
     };
 
     return res.json(stats);
