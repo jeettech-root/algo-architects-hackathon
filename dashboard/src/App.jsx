@@ -315,13 +315,15 @@ export default function App() {
       setManualResult(null);
 
       const response = await fetch(`${API_BASE_URL}/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: manualUrl.trim(),
-          content: manualContent.trim(),
-        }),
-      });
+  method: "POST",   // 🔥 THIS LINE FIXES EVERYTHING
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    url: manualUrl.trim(),
+    content: manualContent.trim()
+  })
+});
 
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
