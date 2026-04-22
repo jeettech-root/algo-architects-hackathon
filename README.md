@@ -88,3 +88,8 @@ If needed, set `VITE_API_BASE_URL` to your backend URL.
 4. Click **Scan current tab**.
 5. Check risk level (`LOW`, `MEDIUM`, `HIGH`) and reason/patterns.
 6. Open dashboard to monitor totals and recent scans.
+
+## 🚀 Live Demo
+
+- Dashboard: [Click here to open](https://cyber-shield-eishe7tio-mehtakaran23s-projects.vercel.app)
+- ⚙️ Backend API: [View API](https://cybershield-backend-mrr3.onrender.com/)
